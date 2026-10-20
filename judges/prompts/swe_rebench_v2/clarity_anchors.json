@@ -1,0 +1,21 @@
+{
+  "_note": "Four calibration anchors for the clarity judge (verified.j2 examples[0..3]). One illustrative problem statement per score: 0=well-specified .. 3=unworkable. Synthetic + repo-agnostic, curated the way SWE-rebench curates theirs (their actual anchor text is not shipped in the repo). Edit freely; the clarity pass injects examples[N].problem_statement from here.",
+  "examples": [
+    {
+      "score": 0,
+      "problem_statement": "Title: `parse_date` raises on ISO strings that carry a timezone offset\n\nProblem: Calling `parse_date('2021-01-01T00:00:00+05:00')` raises `ValueError: unconverted data remains: +05:00`. It should instead return a timezone-aware datetime carrying the given UTC offset.\n\nExpected behavior: `parse_date('2021-01-01T00:00:00+05:00')` returns `datetime(2021, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=5)))`. Naive inputs such as `parse_date('2021-01-01')` already work and must keep returning a naive datetime unchanged."
+    },
+    {
+      "score": 1,
+      "problem_statement": "Title: HTTP client should not retry on 4xx responses\n\nThe client currently retries every failed request up to its configured maximum. Client errors (4xx) will not succeed on retry, so they should be returned immediately instead of retried; only network errors and 5xx responses should be retried. Existing retry count and backoff behavior for the retryable cases should stay as they are."
+    },
+    {
+      "score": 2,
+      "problem_statement": "Title: Improve error messages for config parsing\n\nThe error messages produced when a configuration file is malformed are not very helpful. They should be made clearer so the user can understand what went wrong and fix their config."
+    },
+    {
+      "score": 3,
+      "problem_statement": "Title: Make the scheduler more robust\n\nThe scheduler sometimes behaves unexpectedly when the system is under load. We should make it more robust and reliable. See the discussion in the linked thread for the background and context."
+    }
+  ]
+}

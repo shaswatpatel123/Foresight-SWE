@@ -1,0 +1,78 @@
+You are a senior software maintainer triaging the severity of a real bug. An earlier pull request (PR1) introduced or changed some behavior in {{ repo }} and missed an edge case. A later pull request (PR2) fixed that missed edge case. Your job is to judge the severity of the bug that PR2 fixed, from the perspective of a USER of the library — how bad was it to be running the code between PR1 and PR2?
+
+## Step 1 — extract the facts (before any label)
+
+Answer these four questions from the evidence. They determine the label; do not skip any.
+
+1. FAILURE MODE: when the bug triggers, what does the user observe?
+   - "loud"   — an exception, crash, or error message (the user knows something went wrong)
+   - "silent" — wrong results, wrong output, or silently skipped behavior (the user may never notice)
+   - "none"   — no observable defect for any user (internal hygiene only)
+   Two clarifications: (i) for changes to output formats / serialized schemas / emitted data, judge from the DOWNSTREAM CONSUMER's perspective, and assume the least-informed consumer — code that reads the old schema and quietly gets nothing is "silent", even if some other consumers would raise a KeyError; (ii) if an error is raised but a configuration the user has set suppresses or swallows it (e.g. an "ignore errors" mode), the user observes nothing — that is "silent".
+2. TRIGGER PATH: what must be true for a user to hit the bug?
+   - "default" — happens on default settings / the ordinary calling pattern
+   - "opt-in"  — requires a specific configuration, flag, dialect, platform, or unusual input shape; state the full intersection of conditions
+3. POPULATION: is the triggering setup common in practice (e.g., conda environments, custom admin querysets) or rare (e.g., restricted-privilege DDL placeholders)?
+4. WORKAROUND: once the user knows about the bug, is there a reasonable workaround (a kwarg, a config line, an alternative API)? Is it discoverable only AFTER the breakage?
+
+## Step 2 — severity rubric (pick exactly one)
+
+- "critical" — crash, data loss/corruption, or a security/authorization bypass, on a default and common path. A loud failure on a rare input is NOT critical. For libraries whose job is to reject bad input (parsers, linters), an exception on unusual input is the expected failure class, not critical.
+- "major" — a documented feature or public contract silently produces wrong results on a path users actually hit; or default behavior silently changes/breaks for a common population; or the only workaround is discoverable after the damage. The hallmark of major is SILENT + a path real users hit.
+- "minor" — the failure is loud, OR the trigger is a narrow intersection of conditions, OR an easy workaround exists, OR the impact is cosmetic (output formatting, console listings, error-message wording).
+- "not_a_bug" — no user-facing defect: API hygiene, refactors, docs, naming/aliasing, deprecation bookkeeping. If you choose this, say what non-bug purpose the fix served.
+
+Tie-breakers, in order: (a) silent beats loud — silent wrong results on a real path is at least major; loud failures need a common default path AND no workaround to exceed minor. (b) Severity measures consequence, not mechanism — that the bug is a "regression" or an "edge case" by origin does not change its tier. (c) When torn between two tiers after applying (a) and (b), choose the lower one and say you were torn.
+
+## Step 3 — calibrated examples
+
+- PR1 changed a JSON serializer's default output key from "links" to "edges" without warning; every existing consumer of the default format silently broke; one-kwarg workaround once known. -> major (silent contract break, default path; not critical: no crash/data loss, trivial workaround once known).
+- PR1 made a parser require ON after ROW ACCESS POLICY; the database's own DDL output omits ON when the user lacks privileges, causing a hard parse error. -> minor (loud failure, narrow trigger: restricted privileges AND that clause).
+- PR1 changed virtualenv detection to look only for pyvenv.cfg; conda environments have none, so a plain test-runner invocation silently started collecting tests inside conda envs — an extremely common setup. -> major (silent behavior change, default invocation, common population; workaround only found after breakage).
+- PR1 kept an old function name as a wrapper function instead of a true alias; results identical, only `is`-identity and docstring introspection differed. -> not_a_bug (API hygiene).
+
+## Bug to triage
+
+Repository: {{ repo }}
+
+PR1's task (what the earlier change set out to do):
+<<<
+{{ pr1_task }}
+>>>
+
+PR2's description (human-written, the fix for the missed edge case):
+<<<
+{{ pr2_description }}
+>>>
+
+PR2's fix patch:
+<<<
+{{ fix_patch }}
+>>>
+
+PR2's test patch (the tests that fail before the fix and pass after — read the assertions to determine loud vs silent):
+<<<
+{{ test_patch }}
+>>>
+
+Additional evidence:
+<<<
+{{ evidence }}
+>>>
+
+## Output (JSON only, no other text)
+
+```json
+{
+  "failure_mode": "loud | silent | none",
+  "trigger_path": "default | opt-in",
+  "trigger_conditions": "one line: the full intersection of conditions required to hit the bug",
+  "population": "one line: who realistically hits this, and how common that setup is",
+  "workaround": "one line: the workaround and whether it is discoverable before breakage; or 'none'",
+  "user_impact": "1-2 sentences: what a user of the library experiences",
+  "mechanism": "regression | missed_edge_case | bc_break | other",
+  "severity": "critical | major | minor | not_a_bug",
+  "severity_rationale": "2-3 sentences that explicitly reference your failure_mode, trigger_path, and workaround answers; if you were torn between two tiers, name both and why you chose the lower",
+  "confidence": 0.0
+}
+```

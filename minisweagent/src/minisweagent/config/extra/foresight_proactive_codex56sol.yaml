@@ -1,0 +1,79 @@
+# PROACTIVE arm: foresight_codex56sol.yaml plus one <important> block, which is
+# byte-identical to the one in foresight_proactive_opus5.yaml.
+# Control is that file. Design: docs/PROACTIVE_ANTICIPATION_PLAN.md.
+#
+# Foresight anticipation-gap benchmark, Phase-1 driven by the native Codex CLI
+# (headless). Select with: mini-extra foresight --agent-backend codex -c <this>.
+#
+# Auth is file-based: CLIAgent stages the host ~/.codex/auth.json (ChatGPT
+# subscription OAuth, refreshed by `codex login`) into the container's
+# $HOME/.codex/auth.json. Phase-2 grading is identical to every other backend.
+
+agent:
+  cli_model: "gpt-5.6-sol"   # ChatGPT-account-supported (see ~/.codex/models_cache.json); "" => codex default
+  timeout: 5400
+  # High reasoning for parity with the vLLM baselines (reasoning_effort: high).
+  # extra_args is appended verbatim to `codex exec`; -c overrides codex config.
+  extra_args: '-c model_reasoning_effort="high"'
+  # auth_file: ~/.codex/auth.json    # default; override to stage a different credential
+
+  # NO cli_version: the control (codex56sol_verified186) ran unpinned and codex
+  # transcripts record no version, so there is nothing to pin to without diverging.
+
+  # cli_instance_template is a shared CLIAgentConfig field -- _BACKENDS defines no
+  # per-backend prompt -- so this is the same default + block the Claude arms use.
+  cli_instance_template: |
+    {{task}}
+
+    <important>
+    The PR description above states the behavior that was asked for. It covers the
+    intent of the request, but it may not cover every edge case that behavior has to
+    handle. You should attempt to forecast any potential edge cases that your
+    implementation may not cover, or edge cases introduced by your implementation.
+
+    Work those out yourself, from the codebase: read how the code you are changing is
+    called, what its neighbours already handle, and which inputs and expected outputs
+    the description never names. Do this before you start, while you implement, and
+    again before you submit — what you learn from the code as you go will change what
+    counts as an edge case here.
+
+    One limit. Stay inside the scope of the requested behavior: cover the inputs of
+    THAT behavior, and do not redesign or harden unrelated parts of the codebase.
+
+    Verify the cases you decide to handle with your own scratch script, not by
+    changing the repository's tests.
+    </important>
+
+    You are working in the git repository at {{cwd}}. Implement the source changes needed to satisfy the request above.
+    Guidelines:
+    - MODIFY only regular (non-test) source files under {{cwd}}.
+    - DO NOT modify tests or configuration files (pyproject.toml, setup.cfg, tox.ini, etc.).
+    - Make the fix general and consistent with the surrounding codebase.
+    - Do NOT create git commits or branches; leave your changes in the working tree.
+    When you have finished and verified your change, stop.
+
+environment:
+  cwd: "/testbed"
+  timeout: 300
+  # File auth covers it; these are only used if you point codex at an
+  # OpenAI-compatible endpoint (e.g. DeepSeek) via OPENAI_BASE_URL instead.
+  # Forwarded INTO the container. FORESIGHT_REUSE_ENV is the one run_state*.sh reads
+  # to grade against the image's baked env instead of reinstalling; exporting it on the
+  # HOST is not enough -- apptainer runs --cleanenv, so a variable absent from this list
+  # simply does not exist inside. Without it every instance takes the install path, and
+  # aiohttp's `make .update-pip` then dies against the uv-built /opt/venv, which has no
+  # pip ("No module named pip"). Gold reused for 116 of 186; a codex grade without these
+  # reused for 0 of 5. BUILD_DEPS/EXTRA_DEPS feed the fallback install branch.
+  forward_env:
+    - OPENAI_API_KEY
+    - OPENAI_BASE_URL
+    - BUILD_DEPS
+    - EXTRA_DEPS
+    - FORESIGHT_REUSE_ENV
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+  environment_class: foresightSingularity

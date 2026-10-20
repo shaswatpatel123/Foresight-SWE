@@ -1,0 +1,112 @@
+You are auditing an automated bug-attribution claim in the repository {{ repo }}.
+
+An automated tool claims that an earlier pull request (PR1) introduced the defect that a later pull request (PR2) fixes. It reached that claim **mechanically**: it took the lines PR2 deleted or modified, ran `git blame` on them, and followed the blame back to PR1.
+
+That procedure is frequently wrong. Blame finds whoever last *touched* a line, which is not the same as whoever *broke* it. Your job is to decide whether the causal claim actually holds.
+
+**Treat the claim as a hypothesis, not a fact.** Nothing below is evidence that PR1 is the true introducer — PR1 is simply where the blame landed. Do not assume the link is correct because this prompt describes PR1 as the introducer. Judge it from the code.
+
+## Evidence
+
+Repository: {{ repo }}
+
+PR1 — what the earlier change set out to do:
+<<<
+{{ pr1_task }}
+>>>
+
+PR1's diff. {{ pr1_scope_note }}
+<<<
+{{ pr1_diff }}
+>>>
+
+**The connecting lines** — lines PR2 deleted or modified, which `git blame` traces to a commit inside PR1. These are the entire basis of the tool's claim:
+<<<
+{{ blamed_lines }}
+>>>
+
+**Changes to those files since PR1** — {{ intervening_n }} commit(s) touched the connecting lines' file(s) between PR1 and PR2. If one of these introduced the condition PR2 fixes, PR1 is not the origin:
+<<<
+{{ intervening }}
+>>>
+
+PR2 — the fix:
+<<<
+{{ pr2_description }}
+>>>
+
+PR2's fix patch:
+<<<
+{{ fix_patch }}
+>>>
+
+PR2's test patch (the tests that fail before the fix and pass after):
+<<<
+{{ test_patch }}
+>>>
+
+Human discussion (PR comments and linked issues, both PRs):
+<<<
+{{ discussion }}
+>>>
+
+Issue and PR numbers have been replaced with `<PR-Number>` throughout. That is deliberate — decide from the code and the described behaviour, not from cross-references.
+
+## How to decide
+
+Everything turns on one question: **what did PR1's diff actually DO to the connecting lines?**
+
+Work through it in this order.
+
+1. **Find the defect.** Read PR2's fix patch and its tests. What input or state produced the wrong behaviour, and what does the fix change?
+2. **Find that same logic in PR1's diff.** Look at the connecting lines and locate them in PR1's change.
+3. **Ask what PR1 did to them.**
+   - Did PR1 *write* the flawed logic — the wrong condition, the missing guard, the bad default — as new lines of its own?
+   - Did PR1 write those lines *correctly* for what existed at the time, with PR2 now handling a case PR1's change never covered or created?
+   - Did PR1 merely *move* the lines — a rename, a file move, reformatting, an import or type-annotation change, a lint or codemod pass? A PR1 that swept a large number of files is a strong hint of this.
+
+4. **Check the change list against the defect before you accept.** You named the defect in step 1. Now read the commit subjects in the change list above and ask a single question of each: *does this describe work on the same behaviour, subsystem or symptom as the defect?* If any subject does, you may not choose `A` without saying why that commit is not the origin — name it in `later_change` and give the reason. This is the most common way this audit goes wrong: the culprit is sitting in the change list, described plainly, and the judge accepts PR1 without ever comparing the two. Scan subjects only; you are not being asked to reason about their contents.
+
+A defect can have more than one contributing change. Judge whether PR1 is a **credible cause of this specific defect**, not whether it is the only possible one.
+
+## Fact — attribution
+
+Choose exactly one code. The illustrations below are schematic, not real cases.
+
+**`A` — AUTHORED.** PR1's own diff introduces the logic PR2 corrects. The flawed condition, missing case, wrong default or absent guard is visible among the lines PR1 added or changed. **This is the only code meaning the attribution HOLDS.**
+
+> PR1 adds `if timeout:` to apply a socket timeout. PR2 changes it to `if timeout is not None`, because `timeout=0` was silently ignored. PR1 wrote the faulty condition → `A`.
+
+**`C1` — STALE_ORIGIN.** PR1 authored the connecting lines, but they were correct as written and the defect arrived later. To use `C1` you must **name the specific later change** from the list above (or show the flawed logic predates PR1 entirely). This is the most common way blame misleads: it reaches back to whoever originally wrote a line that only later became inadequate.
+
+> PR1 adds `def decode(self, data):` as a synchronous method, correct for every caller then. The change list shows a later commit "make decode() async"; PR2 restores the sync API. A specific later change is nameable → `C1`.
+
+**A long change list is not itself `C1`.** Many commits may have touched the file without touching the behaviour PR2 fixes. Conversely, an empty change list is strong evidence *against* `C1`: nothing happened in between, so PR1's code is what PR2 is correcting.
+
+**`C2` — CARRIED.** PR1 only relocated or reshaped the lines — a move between files, a rename, reformatting, import reorder, type annotation, or a lint/codemod sweep. The behaviour predates PR1; PR1 carried it across unchanged, so blame landed on PR1 by accident. A PR1 that swept a large number of files is a strong hint.
+
+> PR1 moves `_normalize()` from `utils.py` to `text.py` with its body unchanged, and reformats it. PR2 fixes a bug inside `_normalize` that was present before the move → `C2`.
+
+**`C3` — UNCLEAR.** The evidence does not let you tell: PR1's diff does not show enough of the relevant logic, or the defect cannot be located in what you were given.
+
+The line between `A` and `C1` is **not** whether PR1 touched the code — it did, in both. It is whether PR1's change *created the flaw*, or merely wrote something that was fine at the time. Ask: given only what existed when PR1 landed, would a careful reviewer have called PR1's code wrong? If yes, `A`. If PR1's code was reasonable then and something later made it inadequate, `C1`.
+
+Prefer a definite code when the evidence supports one. Use `C3` when it genuinely does not — not as a hedge.
+
+## Output — JSON only
+
+Answer the three questions FIRST, then commit to a code. Emit ONE flat JSON object
+with exactly these six keys — no nested objects, no extra keys, nothing outside the object.
+
+```json
+{
+  "defect": "one sentence: what PR2 actually fixes",
+  "pr1_role": "one sentence: what PR1 did to the connecting lines",
+  "reasoning": "2-3 sentences working through steps 1-3 above",
+  "later_change": "for C1: quote the commit from the change list that introduced the defect. Otherwise \"none\".",
+  "code": "A|C1|C2|C3",
+  "evidence": "short quote from PR1's diff or the connecting lines that decides it"
+}
+```
+
+All six keys are required. Write `reasoning` before choosing `code` — the analysis is what the code follows from, not a justification added afterwards.

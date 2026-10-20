@@ -1,0 +1,49 @@
+# Round-2 code review for GPT-5.6-Sol. Codex arm of the /code-review experiment;
+# sibling of foresight_opus5_codereview.yaml and foresight_sonnet5_codereview.yaml.
+#
+# No resume here, unlike the Claude arms: Claude's reviewer is an isolated subagent
+# that learns PR-1's intent only from `git log`, so a cold run sees the same thing.
+# Run with RESUME=0 (no --resume-session-map).
+
+agent:
+  cli_model: "gpt-5.6-sol"
+  timeout: 5400
+  extra_args: '-c model_reasoning_effort="high"'
+  # Sol's round-1 sessions record 0.155.0; pinned so this is not a version comparison.
+  cli_version: "0.155.0"
+  # `codex review` supplies the review; this prompt supplies only the apply step.
+  codex_review: true
+  # Claude's own "## Applying fixes (--fix)" section, verbatim except the first
+  # sentence -- Codex has no --fix flag and its findings already exist.
+  apply_review_template: |
+    ## Applying fixes
+
+    A code review of your last commit is appended below. Apply the
+    findings to the working tree instead of stopping at the report: fix each one
+    directly — correctness bugs and reuse/simplification/efficiency cleanups alike.
+    Skip any finding whose fix would change intended behavior, require changes well
+    outside the reviewed diff, or that you judge to be a false positive — note the
+    skip rather than arguing with it. Finish with a brief summary of what was fixed
+    and what was skipped.
+
+environment:
+  cwd: "/testbed"
+  timeout: 300
+  # Seeds round-1's patch and commits it with PR-1's statement as the message, so
+  # `git diff HEAD~1` is the change and `git log -1` says what it was for.
+  codereview: true
+  # Codex auth is the staged ~/.codex/auth.json; these only matter for a custom
+  # endpoint. FORESIGHT_REUSE_ENV must be listed -- apptainer runs --cleanenv.
+  forward_env:
+    - OPENAI_API_KEY
+    - OPENAI_BASE_URL
+    - BUILD_DEPS
+    - EXTRA_DEPS
+    - FORESIGHT_REUSE_ENV
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+  environment_class: foresightSingularity

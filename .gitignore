@@ -1,0 +1,40 @@
+# Secrets: any .<name>_token file at the root (GitHub, HF, ...)
+/.*_token
+.env
+
+# Cloned target repositories (reproducible via git clone)
+/repos/
+
+# Per-commit execution worktrees + their venvs
+/.worktrees/
+
+# Generated data (the dataset is published on Hugging Face, not here)
+/data/**
+!/data/**/
+!/data/**/.gitkeep
+
+# Eval outputs, trajectories, logs
+/eval_runs/
+/results/
+*.log
+*.out
+logs/
+
+# Container images (rebuildable from the Dockerfiles)
+/sif/
+*.sif
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+uv.lock
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.bak

@@ -1,0 +1,96 @@
+You are a senior software maintainer characterizing a real bug for a research dataset. An earlier pull request (PR1) in {{ repo }} introduced or changed some behavior and missed an edge case; a later PR (PR2) fixed that missed edge case. Your job is to EXTRACT STRUCTURED FACTS about the bug PR2 fixed — one value per axis, each backed by a short quote from the evidence.
+
+Do NOT output a severity tier. Severity is COMPUTED from your axis values by a downstream function. Your job is to get the axes right, not to grade. Judge from the perspective of a USER of the library, between PR1 and PR2. This judge runs only on chains already confirmed to be genuine bugs, so every input IS a real user-facing bug.
+
+## Evidence
+
+Repository: {{ repo }}
+
+PR1's task (what the earlier change set out to do):
+<<<
+{{ pr1_task }}
+>>>
+
+PR2's description (human-written fix for the missed edge case):
+<<<
+{{ pr2_description }}
+>>>
+
+PR2's fix patch:
+<<<
+{{ fix_patch }}
+>>>
+
+PR2's test patch (the held-out tests — fail before the fix, pass after; read the assertions to reason about the pre-fix behavior):
+<<<
+{{ test_patch }}
+>>>
+
+Human discussion (PR + linked issues/tickets; each item carries a URL):
+<<<
+{{ discussion }}
+>>>
+
+Objective evidence (gap, held-out test ids, changelog lines):
+<<<
+{{ evidence }}
+>>>
+
+## Extract each axis (value + a short evidence quote)
+
+### 1. impact — the CONSEQUENCE to a user (not the mechanism)
+- "corruption" — PERSISTED or irreversible wrong data (written to a DB / file / durable state), data loss, OR a security/authorization bypass. The dangerous, hard-to-undo class; the user trusts a wrong answer that sticks.
+- "broken"     — a documented capability produces WRONG or MISSING output, or stops working: a wrong value / URL / string; a false-positive diagnostic (the feature reports a wrong verdict); an exception where a result was owed; a feature so defeated it is unusable for its purpose (e.g. resume that forces a full re-download); a control-flow contract silently altered; OR a standard workflow halts (e.g. warning spam failing a zero-warning CI gate). Wrong but TRANSIENT / recoverable output is `broken`, NOT `corruption`.
+- "degraded"   — still produces CORRECT results and blocks no workflow, but worse: perf regression, non-fatal noise.
+- "cosmetic"   — output formatting, messages, listings.
+Judge from the DOWNSTREAM consumer, assuming the least-informed one.
+
+### 2. detectability — does the user OBSERVE it?
+Reason from the held-out test's assertions about what the PRE-FIX behavior was:
+- "silent" — pre-fix returns a WRONG VALUE (assertion on a value), or an EXPECTED EXCEPTION IS MISSING (the fix adds a raise / the error was swallowed).
+- "loud"   — pre-fix raises an UNEXPECTED exception / crash the user sees.
+
+### 3. reach — how COMMON is the setup needed to trigger it?
+Decompose the trigger into its conditions (from the test's arrange/act), then classify by the RAREST (limiting) condition — NOT by "is there a flag".
+- "broad"  — default settings, OR a mainstream usage pattern.
+- "narrow" — a specific niche opt-in (obscure config/dialect/platform, or a minority API).
+- "rare"   — an intersection of >=2 unusual conditions.
+CRITICAL: opt-in != narrow. A single opt-in to a COMMON setting is broad. (E.g. requiring
+`--import-mode=importlib` is NOT narrow — pytest recommends it as the future default; the
+limiting condition is whatever ELSE the test needs.) You MUST justify prevalence with cited
+evidence: a documented default/recommendation, the library's own tutorial usage, OR the count
+of independent reporters in the discussion. No evidence → output "narrow" and set
+"reach_estimated": true.
+
+### 4. security — an ORTHOGONAL yes/no tag (a bug can be security AND have any severity)
+"is_security": true/false — does the fix close an attack (injection, XSS, path traversal,
+auth/authorization bypass, CRLF/header injection, weak randomness, ReDoS/DoS, SSRF, info leak)?
+NOTE: this is a tag ONLY — it does NOT change the severity. Judge impact/reach/detectability on
+the actual consequence regardless (a defense-in-depth hardening fix with no demonstrated exploit
+can still be low impact).
+
+### 5. priority_evidence — REALIZED signals (record; they DO NOT set severity)
+Version pins/downgrades, reaction counts, number of independent reporters, a maintainer hotfix
+release. These are urgency (IEEE-1044 Priority), used only to corroborate the reach estimate,
+never the tier. Quote them; mark realized=true.
+
+### 6. mechanism — did PR1 break working behavior, or miss a case in new code?
+- "regression"          — something that worked before PR1 stopped (PR1 broke it).
+- "incomplete_coverage" — PR1's new behavior was correct but missed a case in its own domain.
+
+## Output — JSON only, NO tier
+
+```json
+{
+  "impact":        {"value": "corruption|broken|degraded|cosmetic", "evidence": "short quote"},
+  "detectability": {"value": "silent|loud", "evidence": "the assertion you reasoned from"},
+  "reach":         {"value": "broad|narrow|rare", "limiting_condition": "the rarest condition",
+                    "prevalence_evidence": "doc default / tutorial / N reporters / or 'none'",
+                    "reach_estimated": false},
+  "security":      {"is_security": false, "evidence": ""},
+  "priority_evidence": {"signals": "pins/reactions/reporters/hotfix or 'none'", "realized": true},
+  "mechanism":     {"value": "regression|incomplete_coverage", "evidence": "short quote"},
+  "user_impact":   "1-2 sentences: what a user of the library experiences",
+  "confidence":    0.0
+}
+```

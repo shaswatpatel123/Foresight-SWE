@@ -1,0 +1,40 @@
+# Foresight anticipation-gap benchmark, Phase-1 driven by the native Codex CLI
+# (headless). Select with: mini-extra foresight --agent-backend codex -c <this>.
+#
+# Auth is file-based: CLIAgent stages the host ~/.codex/auth.json (ChatGPT
+# subscription OAuth, refreshed by `codex login`) into the container's
+# $HOME/.codex/auth.json. Phase-2 grading is identical to every other backend.
+
+agent:
+  cli_model: "gpt-5.6-sol"   # ChatGPT-account-supported (see ~/.codex/models_cache.json); "" => codex default
+  timeout: 5400
+  # High reasoning for parity with the vLLM baselines (reasoning_effort: high).
+  # extra_args is appended verbatim to `codex exec`; -c overrides codex config.
+  extra_args: '-c model_reasoning_effort="high"'
+  # auth_file: ~/.codex/auth.json    # default; override to stage a different credential
+
+environment:
+  cwd: "/testbed"
+  timeout: 300
+  # File auth covers it; these are only used if you point codex at an
+  # OpenAI-compatible endpoint (e.g. DeepSeek) via OPENAI_BASE_URL instead.
+  # Forwarded INTO the container. FORESIGHT_REUSE_ENV is the one run_state*.sh reads
+  # to grade against the image's baked env instead of reinstalling; exporting it on the
+  # HOST is not enough -- apptainer runs --cleanenv, so a variable absent from this list
+  # simply does not exist inside. Without it every instance takes the install path, and
+  # aiohttp's `make .update-pip` then dies against the uv-built /opt/venv, which has no
+  # pip ("No module named pip"). Gold reused for 116 of 186; a codex grade without these
+  # reused for 0 of 5. BUILD_DEPS/EXTRA_DEPS feed the fallback install branch.
+  forward_env:
+    - OPENAI_API_KEY
+    - OPENAI_BASE_URL
+    - BUILD_DEPS
+    - EXTRA_DEPS
+    - FORESIGHT_REUSE_ENV
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+  environment_class: foresightSingularity

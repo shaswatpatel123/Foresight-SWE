@@ -1,0 +1,56 @@
+You are a senior engineer REPAIRING an under-specified task description.
+
+## Context
+A reviewer found that the task's own tests assert behavior the description never
+states, so the task is currently unsolvable from the description alone (an agent
+could not know what the tests demand). Your job is to add the MISSING acceptance
+criteria so the task becomes solvable — and nothing more.
+
+## What was missing
+{{ gap }}
+
+## Goal
+Rewrite the description so that the behavior the tests check is now stated as
+explicit acceptance criteria, while staying faithful to the original intent.
+
+## What you MAY now add (this is the repair)
+- Exact required error TYPES and error MESSAGE strings the tests assert.
+- Exact required return/output VALUES, names, or signatures the tests assert.
+- Specific input conditions under which the above must hold.
+State these as acceptance criteria, the way a careful bug report would.
+
+## What you must STILL NOT do
+- Do NOT describe the implementation: no algorithms, control flow, data structures,
+  file names, symbols, line numbers, or "changed X to Y".
+- Do NOT add any requirement the tests do NOT check (no invented scope).
+- Do NOT reveal or hint at unrelated future behavior — only what THESE tests require.
+
+## Format
+- **Title** — one line.
+- **Problem** — 2-3 sentences.
+- **Expected Behavior** — bullet list; include the exact required messages/types/values.
+- **Acceptance Criteria** — bullet list of the concrete conditions the tests verify.
+
+## Output
+Return only the repaired description.
+
+---
+
+## Inputs
+
+**REPO**: {{ repo }}
+
+**CURRENT DESCRIPTION** (under-specified)
+```
+{{ pr_description }}
+```
+
+**REFERENCE PATCH** (for understanding the intended behavior; do not describe it)
+```
+{{ patch }}
+```
+
+**TESTS that must pass** (derive the missing acceptance criteria from these assertions)
+```
+{{ test_patch }}
+```

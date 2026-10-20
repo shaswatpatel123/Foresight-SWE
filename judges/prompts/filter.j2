@@ -1,0 +1,81 @@
+You are curating a research dataset of PR fix-chains. An earlier pull request (PR1) in {{ repo }} introduced or changed some behavior; a later PR (PR2) fixed an edge case PR1 missed. PR2's tests are held out as a reward signal: an agent that solves PR1 from clean intent should ideally pass them, anticipating the edge case PR1's author didn't.
+
+Your job is to decide whether this chain is a VALID, FAIR anticipation target — by extracting two facts. Do NOT output a keep/drop decision; a downstream function derives it from your facts. Judge the FIXER (PR2) side.
+
+## Evidence
+
+Repository: {{ repo }}
+
+PR1's task (what the earlier change set out to do):
+<<<
+{{ pr1_task }}
+>>>
+
+PR2's description (the fix for the missed edge case):
+<<<
+{{ pr2_description }}
+>>>
+
+PR2's fix patch (the gold anticipation fix):
+<<<
+{{ fix_patch }}
+>>>
+
+PR2's test patch (the HELD-OUT tests — fail before PR2, pass after):
+<<<
+{{ test_patch }}
+>>>
+
+Human discussion (PR + linked issues/tickets):
+<<<
+{{ discussion }}
+>>>
+
+Objective evidence (gap, held-out test ids, changelog lines):
+<<<
+{{ evidence }}
+>>>
+
+## Weigh everything together
+
+No single source is authoritative — piece the whole story together from ALL of the above.
+Different facts surface in different places: a false-positive vs a genuine miss is often clearest
+from the fix patch + tests; a revert/softening or the reason for it often only appears in the
+discussion or changelog; the descriptions frame intent. Synthesize, then extract the two facts.
+
+## Fact 1 — eligibility: is PR2 a genuine, anticipatable missed-edge-case?
+
+- "clean"         — PR2 fixes a genuine BUG: an edge case of PR1's behavior that produced a defect (wrong output, crash, silent wrong result) on some input. A real user-facing defect an agent could have anticipated. This is the only KEEP class. SECURITY fixes count as clean: a change that closes an attack (weak/predictable randomness, injection, XSS, path traversal, auth/authorization bypass, CRLF/header injection, SSRF, ReDoS/DoS) is a real bug even if there is NO observable defect for legitimate users — security bugs are silent to the victim.
+- "not_a_bug"     — no user-facing defect AND not a security fix: pure refactor, rename/alias, docstring/docs, deprecation bookkeeping, internal hygiene, type-only change. (Say what non-bug purpose it served.) NB: "no observable defect for legitimate users" does NOT imply not_a_bug — if the change closes an attack, it is `clean` (see above).
+- "new_feature"   — PR2 ADDS new capability rather than fixing a defect in existing behavior; the held-out test exercises a NEW API/feature, not a missed edge case of what PR1 did.
+- "unpredictable" — PR2 REVERTS or SOFTENS a change PR1 made INTENTIONALLY, for SOCIAL/POLICY reasons (community pushback, "too disruptive", deprecation timing) — not an objective technical defect. An agent cannot foresee a maintainer's later change of heart; the reversal reason usually appears in the discussion or changelog. (BUT: if PR2 reverts because PR1's intentional change had an OBJECTIVE defect visible from spec/code — e.g. its stricter validation rejected valid inputs — that is `clean`, not unpredictable.)
+- "weak"          — a real but trivial/borderline defect, or you are genuinely unsure it is a meaningful edge case.
+
+## Fact 2 — task validity: are PR2's held-out tests a well-formed, FAIR task?
+
+"A" if none of the issues below apply. Otherwise the FIRST applicable Bxx code. These flag when passing the held-out tests requires more (or other) than solving the stated edge case — read the test patch closely.
+
+| code | issue | signal |
+|------|-------|--------|
+| B1  | TEST_SUITE_COUPLING | tests span unrelated modules; a correct fix could fail on unrelated regressions |
+| B2  | IMPLICIT_NAMING     | tests assert specific names / signatures / error-message strings / output values that come from the patch, not derivable from the problem |
+| B3  | EXTERNAL_DEPENDENCY | essential info lives in external URLs not quoted in the issue/PR |
+| B4  | AMBIGUOUS_SPEC      | missing expected behavior, repro, or acceptance criteria |
+| B5  | PATCH_ARTIFACTS     | the fix patch bundles UNRELATED changes that the held-out tests nonetheless require |
+| B6  | IMPLICIT_KNOWLEDGE  | tests assert a specific approach/internals not stated or inferrable from the repo |
+| B7  | INLINE_TEST         | a test is inlined in the fix (source) patch rather than the test patch |
+| B8  | VISUAL_REQUIREMENT  | task needs images/screenshots/visual context (incl. markdown images) not readable as text |
+| B9  | NON_ENGLISH_TEXT    | the problem statement is partially/fully non-English |
+| B10 | TEXT_FILE_TESTS     | the test patch only changes plain-text fixtures (.txt/.csv/…), not code tests |
+| B11 | MULTI_ISSUE_PR      | PR2 fixes multiple independent issues; ambiguous which change the tests require |
+
+## Output — JSON only, NO keep/drop decision
+
+```json
+{
+  "eligibility": {"value": "clean|not_a_bug|new_feature|unpredictable|weak", "evidence": "short quote"},
+  "validity":    {"code": "A|B1|B2|B3|B4|B5|B6|B7|B8|B9|B10|B11", "evidence": "short quote or 'none'"},
+  "reasoning":   "2-3 sentences: what PR2 fixes, why that eligibility, and any validity concern",
+  "confidence":  0.0
+}
+```

@@ -1,0 +1,39 @@
+# Foresight anticipation-gap benchmark, Phase-1 driven by the native Claude Code
+# CLI (headless). Select with: mini-extra foresight --agent-backend claude_code -c <this>.
+# For Codex, copy this file and set cli_model to a codex model + forward OPENAI_API_KEY.
+#
+# CLIAgent installs node at runtime inside the --writable SIF sandbox, runs
+# `claude -p --output-format stream-json ...`, then captures `git diff` as the
+# prediction. Phase-2 grading (run_state.sh) is identical to the mini runs.
+
+agent:
+  # backend is set by --agent-backend; left out here to avoid a duplicate-arg clash.
+  cli_model: "claude-opus-4-8"
+  max_turns: 250
+  cost_limit: 5.0
+  timeout: 5400          # wall-clock budget (s) for the single CLI invocation
+  # High reasoning: claude CLI --effort accepts low|medium|high|xhigh|max (xhigh is
+  # the Claude Code default). extra_args is appended verbatim to the `claude -p` call.
+  extra_args: '--effort high'
+  # install_script: |    # uncomment to override node provisioning (default: NodeSource 22.x)
+  #   set -e
+  #   ...
+
+environment:
+  cwd: "/testbed"
+  timeout: 300
+  # --cleanenv strips host env; forward the CLI's credentials through apptainer --env.
+  # Use ANTHROPIC_API_KEY (API key) OR CLAUDE_CODE_OAUTH_TOKEN (subscription token
+  # from `claude setup-token`) — the latter avoids needing an API key at all.
+  forward_env:
+    # NOT ANTHROPIC_API_KEY -- it outranks CLAUDE_CODE_OAUTH_TOKEN and bills the API.
+    - CLAUDE_CODE_OAUTH_TOKEN
+    - ANTHROPIC_BASE_URL
+    - ANTHROPIC_AUTH_TOKEN
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+  environment_class: foresightSingularity

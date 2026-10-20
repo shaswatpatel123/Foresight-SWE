@@ -1,0 +1,90 @@
+# PROACTIVE arm: foresight_claude_opus5.yaml plus one <important> block.
+# Control is that file. Design: docs/PROACTIVE_ANTICIPATION_PLAN.md.
+#
+# Foresight anticipation-gap benchmark, Phase-1 driven by the native Claude Code
+# CLI (headless). Select with: mini-extra foresight --agent-backend claude_code -c <this>.
+# For Codex, copy this file and set cli_model to a codex model + forward OPENAI_API_KEY.
+#
+# CLIAgent installs node at runtime inside the --writable SIF sandbox, runs
+# `claude -p --output-format stream-json ...`, then captures `git diff` as the
+# prediction. Phase-2 grading (run_state.sh) is identical to the mini runs.
+
+agent:
+  # backend is set by --agent-backend; left out here to avoid a duplicate-arg clash.
+  cli_model: "claude-opus-5"
+  max_turns: 250
+  cost_limit: 5.0
+  timeout: 5400          # wall-clock budget (s) for the single CLI invocation
+  # High reasoning: claude CLI --effort accepts low|medium|high|xhigh|max (xhigh is
+  # the Claude Code default). extra_args is appended verbatim to the `claude -p` call.
+  extra_args: '--effort high'
+  # Pin to the version the control ran on (opus5_verified186 banners say 2.1.278).
+  # Unpinned, host drift makes this a version comparison, not a prompt comparison.
+  cli_version: "2.1.278"
+  # install_script: |    # uncomment to override node provisioning (default: NodeSource 22.x)
+  #   set -e
+  #   ...
+
+  # Shipped CLIAgentConfig default, verbatim, plus the <important> block.
+  # Outside {{task}} so it never reads as PR prose.
+  cli_instance_template: |
+    {{task}}
+
+    <important>
+    The PR description above states the behavior that was asked for. It covers the
+    intent of the request, but it may not cover every edge case that behavior has to
+    handle. You should attempt to forecast any potential edge cases that your
+    implementation may not cover, or edge cases introduced by your implementation.
+
+    Work those out yourself, from the codebase: read how the code you are changing is
+    called, what its neighbours already handle, and which inputs and expected outputs
+    the description never names. Do this before you start, while you implement, and
+    again before you submit — what you learn from the code as you go will change what
+    counts as an edge case here.
+
+    One limit. Stay inside the scope of the requested behavior: cover the inputs of
+    THAT behavior, and do not redesign or harden unrelated parts of the codebase.
+
+    Verify the cases you decide to handle with your own scratch script, not by
+    changing the repository's tests.
+    </important>
+
+    You are working in the git repository at {{cwd}}. Implement the source changes needed to satisfy the request above.
+    Guidelines:
+    - MODIFY only regular (non-test) source files under {{cwd}}.
+    - DO NOT modify tests or configuration files (pyproject.toml, setup.cfg, tox.ini, etc.).
+    - Make the fix general and consistent with the surrounding codebase.
+    - Do NOT create git commits or branches; leave your changes in the working tree.
+    When you have finished and verified your change, stop.
+
+environment:
+  cwd: "/testbed"
+  timeout: 300
+  # --cleanenv strips host env; forward the CLI's credentials through apptainer --env.
+  # Use ANTHROPIC_API_KEY (API key) OR CLAUDE_CODE_OAUTH_TOKEN (subscription token
+  # from `claude setup-token`) — the latter avoids needing an API key at all.
+  # Forwarded INTO the container. FORESIGHT_REUSE_ENV is the one run_state*.sh reads
+  # to grade against the image's baked env instead of reinstalling; exporting it on the
+  # HOST is not enough -- apptainer runs --cleanenv, so a variable absent from this list
+  # simply does not exist inside. Without it every instance takes the install path, and
+  # aiohttp's `make .update-pip` then dies against the uv-built /opt/venv, which has no
+  # pip ("No module named pip"). Gold reused for 116 of 186; a codex grade without these
+  # reused for 0 of 5. BUILD_DEPS/EXTRA_DEPS feed the fallback install branch.
+  forward_env:
+    # NOT ANTHROPIC_API_KEY: Claude Code prefers it over CLAUDE_CODE_OAUTH_TOKEN, so
+    # forwarding it bills the API instead of the subscription. minisweagent/__init__.py
+    # load_dotenv()s ~/.config/mini-swe-agent/.env, which sets it in every mini-extra
+    # process -- so it is present even when the shell has it unset.
+    - CLAUDE_CODE_OAUTH_TOKEN
+    - ANTHROPIC_BASE_URL
+    - ANTHROPIC_AUTH_TOKEN
+    - BUILD_DEPS
+    - EXTRA_DEPS
+    - FORESIGHT_REUSE_ENV
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+  environment_class: foresightSingularity

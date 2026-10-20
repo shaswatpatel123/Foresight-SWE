@@ -1,0 +1,46 @@
+You are auditing an agent-facing PROBLEM STATEMENT to ensure it is a FAIR test of whether an agent ANTICIPATES an edge case.
+
+Setup: an earlier PR (PR1) introduced/changed behavior in {{ repo }}. A later PR (PR2) then fixed an edge case PR1 missed. We give an agent PR1's problem statement, have it solve PR1 from clean intent, and score whether its solution passes PR2's held-out tests — i.e. whether it ANTICIPATED the edge case WITHOUT being told.
+
+For this to be fair the statement must sit in a Goldilocks zone:
+- state the GOAL so a competent solution is possible;
+- NOT prescribe the specific (flawed) implementation PR1 used — else following the task faithfully FORCES the bug, so the task contradicts the anticipation (UNFAIR);
+- NOT reveal the edge-case handling PR2's tests check — else the agent is simply told the answer (LEAKY, anticipation becomes trivial).
+
+## The edge case — ANSWER KEY (the agent must NOT be able to derive this from the statement)
+PR2's fix (what the missed edge case was):
+<<<
+{{ anticipation_patch }}
+>>>
+PR2's held-out tests (what "anticipation" is scored on):
+<<<
+{{ anticipation_test_patch }}
+>>>
+
+## PR1's actual change (the introducer — may embody the flawed mechanism)
+<<<
+{{ pr1_patch }}
+>>>
+
+## The PROBLEM STATEMENT under audit (what the agent sees)
+<<<
+{{ pr1_statement }}
+>>>
+
+## Decide the PRIMARY verdict
+- "clean"                — intent-level: a correct anticipating solution satisfies it, and it neither prescribes the flawed mechanism nor reveals the edge-case handling.
+- "prescribes_mechanism" — dictates the specific implementation/approach that produces the missed edge case (a control-flow or data-structure choice PR2 had to undo), so faithfully following it forces the flaw.
+- "leaks_anticipation"   — states or clearly implies the CORRECT handling of the edge case PR2's tests verify (the thing the agent should have to DISCOVER on its own).
+- "leaks_future_fix"     — references the later fix / PR2 / the bug report / the specific failure symptom the held-out tests target.
+
+Severity order if several apply: prescribes_mechanism > leaks_future_fix > leaks_anticipation > clean.
+
+Be strict about `leaks_anticipation`: any sentence that tells the agent how the edge-case-relevant cases must behave (e.g. "multi-result methods must still collect all matches", "empty input returns X", "must guard against null") is a leak — the agent should derive that.
+
+## Output JSON only
+{
+  "verdict": "clean|prescribes_mechanism|leaks_anticipation|leaks_future_fix",
+  "evidence": "the exact phrase from the statement that triggers it, or 'none'",
+  "reasoning": "2-3 sentences tying the statement to the specific edge case",
+  "repair_hint": "how to rewrite to intent-only: what to remove, what to keep"
+}
