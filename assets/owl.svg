@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="140 90 320 390" width="320" height="390">
+
+
+  <!-- owl body -->
+  <g>
+
+    <!-- ear tufts -->
+    <path d="M220 175 L195 105 L255 150 Z" fill="#7b6d9e"/>
+    <path d="M380 175 L405 105 L345 150 Z" fill="#7b6d9e"/>
+    <!-- body -->
+    <path d="M300 130 C400 130 430 210 430 300 C430 400 380 455 300 455 C220 455 170 400 170 300 C170 210 200 130 300 130 Z" fill="#7b6d9e"/>
+    <!-- belly -->
+    <path d="M300 280 C365 280 390 340 385 395 C378 440 340 452 300 452 C260 452 222 440 215 395 C210 340 235 280 300 280 Z" fill="#d9cfe8"/>
+    <!-- belly scallops -->
+    <g fill="none" stroke="#a99bc4" stroke-width="4" stroke-linecap="round">
+      <path d="M255 360 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0"/>
+      <path d="M243 390 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0"/>
+      <path d="M255 420 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0"/>
+    </g>
+    <!-- face disc -->
+    <path d="M300 165 C360 160 395 200 390 245 C385 275 345 285 300 270 C255 285 215 275 210 245 C205 200 240 160 300 165 Z" fill="#b6a8d3"/>
+    <!-- beak -->
+    <path d="M288 262 L312 262 L300 290 Z" fill="#f2b33d"/>
+
+    <!-- binoculars held to eyes -->
+    <g>
+      <rect x="282" y="210" width="36" height="16" rx="5" fill="#3b3b44"/>
+      <rect x="226" y="190" width="62" height="70" rx="14" fill="#4a4a55"/>
+      <rect x="312" y="190" width="62" height="70" rx="14" fill="#4a4a55"/>
+      <rect x="226" y="208" width="62" height="12" fill="#363640"/>
+      <rect x="312" y="208" width="62" height="12" fill="#363640"/>
+      <circle cx="257" cy="250" r="22" fill="#2a2a32"/>
+      <circle cx="343" cy="250" r="22" fill="#2a2a32"/>
+      <circle cx="257" cy="250" r="15" fill="#5fb3c9"/>
+      <circle cx="343" cy="250" r="15" fill="#5fb3c9"/>
+      <path d="M248 243 a10 10 0 0 1 12 -4" stroke="#e6f7fb" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M334 243 a10 10 0 0 1 12 -4" stroke="#e6f7fb" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+
+
+    <!-- wings wrapped up to hold binoculars -->
+    <path d="M172 300 C160 250 185 215 230 225 C240 245 235 270 220 290 C205 315 185 325 172 300 Z" fill="#5f5385"/>
+    <path d="M428 300 C440 250 415 215 370 225 C360 245 365 270 380 290 C395 315 415 325 428 300 Z" fill="#5f5385"/>
+    <path d="M222 230 l14 -6 M226 242 l14 -4 M378 230 l-14 -6 M374 242 l-14 -4" stroke="#7b6d9e" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- feet -->
+    <g fill="#f2b33d">
+      <path d="M255 448 l-10 16 h8 l6 -10 l4 12 h8 l2 -12 l6 10 h8 l-10 -16 z"/>
+      <path d="M325 448 l-10 16 h8 l6 -10 l4 12 h8 l2 -12 l6 10 h8 l-10 -16 z"/>
+    </g>
+  </g>
+
+</svg>

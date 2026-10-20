@@ -1,0 +1,41 @@
+{
+  "source": "draft paper (iclr2027_conference.tex, Tables 1-3, 2026-09-28); cost/turns tallied from the run outputs, 2026-10-19; review settings give the full run (first round + review), with the review round alone in review_cost/review_turns",
+  "split": "Foresight-SWE eval set, 212 instances",
+  "rows": [
+    {"name": "Claude Opus 5",          "harness": "Claude Code",     "open": false, "resolve": 77.83, "ant": 30.57, "frr": 24.53, "cost": 2.49, "turns": 46.0},
+    {"name": "Qwen3.8 Flash Next",     "harness": "mini-swe-agent",  "open": true,  "resolve": 91.98, "ant": 22.88, "frr": 20.75, "cost": 0.39, "turns": 80.0},
+    {"name": "DeepSeek-V4 Flash",      "harness": "mini-swe-agent",  "open": true,  "resolve": 58.49, "ant": 31.76, "frr": 18.87, "cost": 2.68, "turns": 148.2},
+    {"name": "GPT-5.6 Sol",            "harness": "Codex",           "open": false, "resolve": 84.43, "ant": 23.98, "frr": 18.40, "cost": 1.87, "turns": 45.3},
+    {"name": "Claude Sonnet 5",        "harness": "Claude Code",     "open": false, "resolve": 59.91, "ant": 28.76, "frr": 16.98, "cost": 1.89, "turns": 63.3},
+    {"name": "GPT-5.6 Luna",           "harness": "Codex",           "open": false, "resolve": 74.06, "ant": 28.01, "frr": 16.51, "cost": 0.10, "turns": 39.2},
+    {"name": "GPT-5.6 Terra",          "harness": "Codex",           "open": false, "resolve": 74.53, "ant": 23.91, "frr": 15.09, "cost": 0.55, "turns": 25.8},
+    {"name": "GLM-5.3 Flash",          "harness": "mini-swe-agent",  "open": true,  "resolve": 80.66, "ant": 19.64, "frr": 11.32, "cost": 0.18, "turns": 53.3},
+    {"name": "Qwen3.8-27B",            "harness": "mini-swe-agent",  "open": true,  "resolve": 25.47, "ant": 28.37, "frr": 7.55, "cost": 1.77, "turns": 97.3},
+    {"name": "Qwen3.5-397B-A17B",      "harness": "mini-swe-agent",  "open": true,  "resolve": 21.70, "ant": 26.44, "frr": 7.08, "cost": 2.59, "turns": 121.3},
+    {"name": "Qwen3.5-27B",            "harness": "mini-swe-agent",  "open": true,  "resolve": 18.40, "ant": 26.00, "frr": 6.13, "cost": 0.63, "turns": 75.1}
+  ],
+  "defect_specified": [
+    {"name": "Qwen3.8 Flash Next", "specified": 97.64, "frr": 20.75},
+    {"name": "DeepSeek-V4 Flash",  "specified": 85.85, "frr": 18.87},
+    {"name": "GPT-5.6 Sol",        "specified": 94.81, "frr": 18.40},
+    {"name": "Claude Sonnet 5",    "specified": 86.32, "frr": 16.98},
+    {"name": "Claude Opus 5",      "specified": 91.51, "frr": 24.53}
+  ],
+  "prompting": [
+    {"name": "GPT-5.6 Sol", "settings": [
+      {"setting": "Baseline", "resolve": 84.43, "ant": 23.98, "frr": 18.40},
+      {"setting": "+ Proactive prompt", "resolve": 82.55, "ant": 39.77, "frr": 31.60, "cost": 2.24, "turns": 45.9},
+      {"setting": "+ Self-review", "resolve": 69.81, "ant": 34.10, "frr": 24.06, "cost": 2.68, "turns": 74.6, "review_cost": 0.82, "review_turns": 29.3},
+      {"setting": "+ Both", "resolve": 70.28, "ant": 44.90, "frr": 32.55, "cost": 2.86, "turns": 67.6, "review_cost": 0.62, "review_turns": 21.7}]},
+    {"name": "Claude Opus 5", "settings": [
+      {"setting": "Baseline", "resolve": 77.83, "ant": 30.57, "frr": 24.53},
+      {"setting": "+ Proactive prompt", "resolve": 75.47, "ant": 44.00, "frr": 32.55, "cost": 5.61, "turns": 75.3},
+      {"setting": "+ Self-review", "resolve": 68.40, "ant": 46.38, "frr": 35.85, "cost": 4.97, "turns": 88.8, "review_cost": 2.48, "review_turns": 42.8},
+      {"setting": "+ Both", "resolve": 64.62, "ant": 52.97, "frr": 35.85, "cost": 8.51, "turns": 122.2, "review_cost": 2.90, "review_turns": 46.8}]},
+    {"name": "Claude Sonnet 5", "settings": [
+      {"setting": "Baseline", "resolve": 59.91, "ant": 28.76, "frr": 16.98},
+      {"setting": "+ Proactive prompt", "resolve": 44.81, "ant": 31.87, "frr": 13.68, "cost": 2.33, "turns": 78.3},
+      {"setting": "+ Self-review", "resolve": 57.08, "ant": 30.47, "frr": 18.40, "cost": 3.93, "turns": 139.9, "review_cost": 2.04, "review_turns": 76.6},
+      {"setting": "+ Both", "resolve": 42.45, "ant": 32.81, "frr": 14.15, "cost": 4.57, "turns": 170.5, "review_cost": 2.25, "review_turns": 92.2}]}
+  ]
+}
