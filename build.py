@@ -3,7 +3,7 @@
     python3 build.py [--dataset path/to/verified.jsonl] [--template template.html --out index.html]
 
 Without --dataset, the verified split is downloaded from the HF dataset once and cached in .cache/
-(gitignored). The dataset is gated, so set HF_TOKEN or run `huggingface-cli login` first.
+(gitignored). While the dataset is private or gated, set HF_TOKEN or run `huggingface-cli login` first.
 
 Patches and PASS_TO_PASS lists are left out; the page links to the HF dataset for those.
 Leaderboard rows come from website/leaderboard.json (currently the draft paper's tables). Static assets
@@ -51,7 +51,7 @@ def slim(r):
     }
 
 
-HF_VERIFIED = "https://huggingface.co/datasets/shaswat123/foresightcoder-anticipation/resolve/main/data/verified.jsonl"
+HF_VERIFIED = "https://huggingface.co/datasets/shaswat123/Foresight-SWE/resolve/main/data/verified.jsonl"
 
 
 def default_dataset() -> Path:
