@@ -1,22 +1,22 @@
 <div align="center">
 
-# Do Coding Agents Catch Their Own Bugs? (They Don't)
+# Do Coding Agents Catch Their Own Bugs? (They Don't.)
 
 [![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b.svg)](https://arxiv.org/abs/XXXX.XXXXX)
-[![Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Foresight--SWE-yellow)](https://huggingface.co/datasets/HF_USER/HF_DATASET)
-[![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fhuggingface.co%2Fapi%2Fdatasets%2FHF_USER%2FHF_DATASET&query=%24.downloads&label=downloads&color=yellow)](https://huggingface.co/datasets/HF_USER/HF_DATASET)
-[![Leaderboard](https://img.shields.io/badge/Leaderboard-website-blue)](https://LEADERBOARD_URL)
+[![Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Foresight--SWE-yellow)](https://huggingface.co/datasets/shaswat123/Foresight-SWE)
+[![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fhuggingface.co%2Fapi%2Fdatasets%2Fshaswat123%2FForesight-SWE&query=%24.downloads&label=downloads&color=yellow)](https://huggingface.co/datasets/shaswat123/Foresight-SWE)
+[![Leaderboard](https://img.shields.io/badge/Leaderboard-website-blue)](https://shaswatpatel123.github.io/Foresight-SWE/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 </div>
 
-Real software development requires engineers to foresee and fix potential problems with their code that are not explicitly specified in requirements---such as pre-emptively considering vulnerabilities or other bugs from a code change.
+In software development, engineers need to foresee and fix potential problems with their code that are not explicitly specified in requirements, such as pre-emptively considering vulnerabilities or other bugs from a code change.
 But current benchmarks often do not measure these future-looking consequences.
 We introduce **Foresight-SWE**, a benchmark for measuring whether coding agents can anticipate and address unstated problems during software engineering tasks.
 Foresight-SWE consists of 212 samples spanning 4 languages and 35 popular open-source repositories.
-Each sample contains two pull requests (PRs), the second of which resolves defects the first one introduced. 
-To measure whether agents exhibit foresight, we define the **Foresight resolve rate (FRR)** as the fraction of instances where an agent fully resolves the original task while also avoiding the defect identified by a later PR.
-We evaluate eleven large language models and find that FRR ranges from only 11.32\% to 24.53\%, largely failing to address problems introduced by the first PR change.
+Each sample contains two pull requests (PRs), the second of which resolves defects the first one introduced.
+To measure whether agents exhibit foresight, we define the **foresight resolve rate (FRR)** as the fraction of instances where an agent fully resolves the original task while also avoiding the defect identified by a later PR.
+We evaluate eleven large language models and find that FRR ranges from only 6.13% to 24.53%, indicating that models largely fail to address problems introduced by the first PR change.
 This raises important questions about how models are trained and aligned in coding contexts, as well as how code review tools should be improved for more fail-safe coding.
 Foresight-SWE shifts evaluations in this direction.
 
@@ -30,7 +30,8 @@ uv pip install -e ./minisweagent     # eval harness (mini-extra)
 uv pip install -e ".[api,llm]"       # mining / pipeline code (foresight)
 ```
 
-Download the dataset from <hf-dataset>. Images are pulled from `docker.io/shaswatpatel123/foresight`.
+Download the dataset from [Hugging Face](https://huggingface.co/datasets/shaswat123/Foresight-SWE) (`data/verified.jsonl`) and set `DATASET` in the eval script to its path.
+Images are pulled from [`docker.io/shaswatpatel123/foresight-swe`](https://hub.docker.com/r/shaswatpatel123/foresight-swe); each instance names its own image in the `docker_image` column.
 
 For a vLLM-served model, edit its config in `minisweagent/src/minisweagent/config/extra/`:
 set `api_base: http://<your-vllm-host>:<port>/v1` and point `litellm_model_registry` at `minisweagent/model_registry.json`.
