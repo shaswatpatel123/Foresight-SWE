@@ -230,6 +230,24 @@ td.best .v::after { content: "●"; font-size: .45em; vertical-align: 3px; margi
 .detail .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
 .detail .head h3 { font: 500 1.35rem/1.2 var(--f-mono); letter-spacing: -.01em; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+/* browse: what the labels mean */
+.legend { padding: 0; margin-bottom: 16px; }
+.legend > summary { cursor: pointer; padding: 14px 18px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 10px; }
+.legend > summary::-webkit-details-marker { display: none; }
+.legend > summary::before { content: "▸"; color: var(--brand); transition: transform .15s; }
+.legend[open] > summary::before { transform: rotate(90deg); }
+.legend > summary .muted { font-weight: 400; }
+.legend .legend-body { padding: 0 18px 18px; font-size: .92rem; line-height: 1.6; max-width: 860px; }
+.legend .legend-body > ol { margin: 0; padding-left: 1.4em; }
+.legend .legend-body > ol > li { margin: 0 0 12px; }
+.legend ol ol { margin: 6px 0 0; padding-left: 1.5em; }
+.legend ol ol li { margin: 0 0 3px; }
+.legend li b, .legend p b { font-weight: 600; }
+.legend p { margin: 0 0 10px; }
+.legend hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+.legend table { font-size: .85rem; width: auto; margin: 4px 0 6px; }
+.legend th, .legend td { white-space: normal; padding: 8px 14px; position: static; }
+.legend .note { color: var(--muted); font-size: .85rem; margin: 10px 0 0; }
 .stmts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
 .stmts > * { min-width: 0; }
 .stmt { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg); }
@@ -258,6 +276,8 @@ td.best .v::after { content: "●"; font-size: .45em; vertical-align: 3px; margi
 .prose p:last-child { margin-bottom: 0; }
 .fig { margin: 20px 0 28px; background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); }
 .fig img { display: block; width: 100%; height: auto; }
+.about .about-list { margin: 0 0 1em; padding-left: 1.4em; }
+.about .about-list li { margin: 0 0 .5em; line-height: 1.6; }
 @media (max-width: 860px) { .metrics { grid-template-columns: 1fr; } }
 
 /* about */
@@ -268,7 +288,9 @@ section { scroll-margin-top: 80px; }
 .about p { margin: 0 0 1em; }
 .about p:last-child { margin-bottom: 0; }
 .about .fig { margin: 6px 0 18px; }
-.about .fig figcaption { margin-top: 12px; color: var(--muted); font-size: .9rem; line-height: 1.55; }
+.about .fig figcaption { margin-top: 12px; color: #3d4458; font-size: .9rem; line-height: 1.55; }
+/* the figure card is always white, so its caption keeps dark text in both themes */
+.about .fig figcaption b { color: #141a2e; }
 
 /* contact + citation */
 .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; }
@@ -295,11 +317,11 @@ footer .canary { font-family: var(--f-mono); font-size: .72rem; word-break: brea
   <a class="l" href="#leaderboard">Leaderboard</a>
   <a class="l" href="#about">About</a>
   <a class="l" href="#browse">Browse</a>
+  <a class="l ext" href="https://arxiv.org/abs/2611.01181" target="_blank" rel="noopener">Paper</a>
   <a class="l ext" href="https://github.com/shaswatpatel123/Foresight-SWE" target="_blank" rel="noopener">GitHub</a>
   <div class="more">
     <button class="l" type="button" id="more-btn" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">More <svg width="10" height="7" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="menu" id="more-menu" role="menu" hidden>
-      <a role="menuitem" class="disabled" aria-disabled="true">Blog <span class="muted">soon</span></a>
       <a role="menuitem" href="https://huggingface.co/datasets/shaswat123/Foresight-SWE" target="_blank" rel="noopener">Hugging Face</a>
       <a role="menuitem" href="https://hub.docker.com/r/shaswatpatel123/foresight-swe" target="_blank" rel="noopener">Docker Hub</a>
     </div>
@@ -377,7 +399,7 @@ footer .canary { font-family: var(--f-mono); font-size: .72rem; word-break: brea
 </div></section>
 
 <section id="about" data-view="home"><div class="wrap about">
-  <header><div><h2>About Foresight-SWE</h2><p>Why we built it, and what an instance is.</p></div></header>
+  <header><div><h2>About Foresight-SWE</h2><p>Why we built it, how we collected the data, and how we score an agent.</p></div></header>
 
   <div class="block" id="why">
     <h3>Why foresight?</h3>
@@ -388,9 +410,20 @@ footer .canary { font-family: var(--f-mono); font-size: .72rem; word-break: brea
     </figure>
   </div>
 
-  <div class="block" id="instance">
-    <h3>What an instance is</h3>
-    <p>Each instance pairs two pull requests from the same repository. PR<sub>1</sub> implemented a change, passed review and merged. PR<sub>2</sub>, a median of 88 days later, fixed a defect that PR<sub>1</sub> left behind. The agent is given the repository as it was just before PR<sub>1</sub>, together with a self-contained task statement for PR<sub>1</sub>. It is told nothing about PR<sub>2</sub>, and nothing suggests a defect is coming.</p>
+  <div class="block" id="dataset">
+    <h3>Dataset collection</h3>
+    <p>Each instance pairs two pull requests from the same repository. PR<sub>1</sub> implemented a change, passed review and merged. PR<sub>2</sub>, a median of 88 days later, fixed a defect that PR<sub>1</sub> left behind. We mine pairs from open-source repositories on GitHub. We look for maintainers identifying PR<sub>1</sub> in PR<sub>2</sub>'s discussion, changelogs, Django's Trac tickets and security advisories via CVEs. We also use the SZZ algorithm to identify PR<sub>1</sub> where maintainers have not attested to it in discussion. We then use LLM-as-a-judge to keep genuine pairs and build dockerized environments via agents. See Section 3 of our <a href="https://arxiv.org/abs/2611.01181" target="_blank" rel="noopener">paper</a> for the full details.</p>
+  </div>
+
+  <div class="block" id="measure">
+    <h3>How we measure foresight capability in coding agents?</h3>
+    <p>The agent is given the repository as it was just before PR<sub>1</sub>, together with a self-contained task statement for PR<sub>1</sub>. It is told nothing about PR<sub>2</sub>, and nothing suggests a defect is coming.</p>
+    <p>The agent works on PR<sub>1</sub>'s task and submits a patch. We then run two sets of tests on it. PR<sub>1</sub>'s own tests check that it did the stated task without breaking anything. The tests PR<sub>2</sub> added check whether it also avoided the defect.</p>
+    <ol class="about-list">
+      <li><b>Resolve Rate:</b> The fraction of instances for which an agent passes all PR<sub>1</sub> tests.</li>
+      <li><b>Foresight Resolve Rate (FRR):</b> The fraction of instances for which the agent passes all PR<sub>1</sub> tests and all PR<sub>2</sub> tests.</li>
+      <li><b>Anticipation Score:</b> The mean fraction of PR<sub>2</sub> tests the agent passes. This is a soft metric to measure partial repair.</li>
+    </ol>
   </div>
 
 </div></section>
@@ -403,12 +436,15 @@ footer .canary { font-family: var(--f-mono); font-size: .72rem; word-break: brea
     </div>
     <div class="card">
       <h3>Citation</h3>
-      <p>If you use Foresight-SWE in your work, please cite our paper!</p>
-      <div class="bibwrap"><pre class="bib" id="bib">@misc{foresightswe2026,
-  title  = {Do Coding Agents Catch Their Own Bugs? (They Don't)},
-  author = {Patel, Shaswat and Liao, Michel and Henderson, Peter and He, He and Chen, Valerie},
-  year   = {2026},
-  note   = {Preprint forthcoming}
+      <p>If you use Foresight-SWE in your work, please cite our <a href="https://arxiv.org/abs/2611.01181" target="_blank" rel="noopener">paper</a>!</p>
+      <div class="bibwrap"><pre class="bib" id="bib">@misc{patel2026codingagentscatchbugs,
+      title={Do Coding Agents Catch Their Own Bugs? (They Don't.)}, 
+      author={Shaswat Patel and Michel Liao and Peter Henderson and He He and Valerie Chen},
+      year={2026},
+      eprint={2611.01181},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE},
+      url={https://arxiv.org/abs/2611.01181}, 
 }</pre><button class="btn" type="button" id="copy-bib">Copy</button></div>
     </div>
   </div>
@@ -416,6 +452,59 @@ footer .canary { font-family: var(--f-mono); font-size: .72rem; word-break: brea
 
 <section id="browse" data-view="browse"><div class="wrap">
   <header><div><h2>Browse instances</h2><p>Pick an instance to read the task statement the agent sees and the defect it was expected to anticipate.</p></div></header>
+  <details class="card legend" id="labels">
+    <summary>What the labels mean <span class="muted">impact, reach, failure mode, severity, difficulty, time to fix, security</span></summary>
+    <div class="legend-body">
+      <ol>
+        <li><b>Impact:</b> We capture the effect of the defect on the user via this label. We sub-categorize it as:
+          <ol type="a">
+            <li><b>Corruption:</b> persisted wrong data, data loss or a security bypass.</li>
+            <li><b>Broken:</b> a feature gives wrong or missing output, or stops working.</li>
+            <li><b>Degraded:</b> results stay correct but get worse, such as slower or noisier.</li>
+            <li><b>Cosmetic:</b> formatting, messages or listings.</li>
+          </ol>
+        </li>
+        <li><b>Reach:</b> This label captures how many users will be affected by the defect. A defect on a commonly used setup is more detrimental than one on a setup used by a narrow user base. We sub-categorize it as:
+          <ol type="a">
+            <li><b>Broad:</b> default settings or mainstream usage.</li>
+            <li><b>Narrow:</b> a specific niche setup; generally the defect surfaces when the user uses non-default flags.</li>
+            <li><b>Rare:</b> multiple unusual conditions need to be met for the defect path to be triggered.</li>
+          </ol>
+        </li>
+        <li><b>Failure mode:</b> We also capture whether the user notices the defect when it happens:
+          <ol type="a">
+            <li><b>Silent:</b> the code returns a wrong result, or an expected error never appears.</li>
+            <li><b>Loud:</b> the code raises an error the user sees.</li>
+          </ol>
+        </li>
+      </ol>
+      <p><b>Severity:</b> It is a mixture of the above three, based on the rule defined in the table below:</p>
+      <table class="sev-rule">
+        <thead><tr><th>Impact \ Reach</th><th>Broad</th><th>Narrow</th><th>Rare</th></tr></thead>
+        <tbody>
+          <tr><td>Corruption</td><td><span class="sev critical">critical</span></td><td><span class="sev major">major</span></td><td><span class="sev major">major</span></td></tr>
+          <tr><td>Broken</td><td><span class="sev major">major</span></td><td><span class="sev major">major</span> if silent, else <span class="sev minor">minor</span></td><td><span class="sev minor">minor</span></td></tr>
+          <tr><td>Degraded / cosmetic</td><td><span class="sev minor">minor</span></td><td><span class="sev minor">minor</span></td><td><span class="sev minor">minor</span></td></tr>
+        </tbody>
+      </table>
+      <hr>
+      <ol start="4">
+        <li><b>Difficulty:</b> How much time a human developer would need to implement the change. It is sub-categorized into three types, shown for the task (PR<sub>1</sub>) and for the fix (PR<sub>2</sub>):
+          <ol type="a">
+            <li><b>Easy:</b> under 15 minutes.</li>
+            <li><b>Medium:</b> 15 minutes to an hour.</li>
+            <li><b>Hard:</b> over an hour.</li>
+          </ol>
+        </li>
+      </ol>
+      <hr>
+      <p><b>Time to fix:</b> Days between PR<sub>1</sub> and PR<sub>2</sub>: how long the defect stayed in the code before it was fixed.</p>
+      <hr>
+      <p><b>Security:</b> A separate tag for fixes that close an attack, such as injection or an authorization bypass. It does not change severity. PRs mined via CVE security advisories are flagged as security too.</p>
+      <hr>
+      <p class="note">An LLM judge assigns impact, reach, failure mode and difficulty for every instance. See the appendix of our <a href="https://arxiv.org/abs/2611.01181" target="_blank" rel="noopener">paper</a> for the prompts.</p>
+    </div>
+  </details>
   <div class="browse">
     <aside class="list-pane">
       <div class="field search"><input id="q" type="search" placeholder="Search id, repo or statement" aria-label="Search instances"></div>
@@ -695,7 +784,7 @@ drawRows();
 show((I.find(x => x.id.startsWith("attrs__")) || I[0]).id, false);
 
 // views: home = title + leaderboard + about; browse is its own page. Other hashes are anchors on the home page.
-const ABOUT_ANCHORS = new Set(["about", "why", "instance"]);
+const ABOUT_ANCHORS = new Set(["about", "why", "instance", "dataset", "measure"]);
 function route() {
   let h = location.hash.slice(1);
   if (h === "method") h = "about";
