@@ -2,7 +2,7 @@
 
 # Do Coding Agents Catch Their Own Bugs? (They Don't.)
 
-[![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b.svg)](https://arxiv.org/abs/XXXX.XXXXX)
+[![arXiv](https://img.shields.io/badge/arXiv-2611.01181-b31b1b.svg)](https://arxiv.org/abs/2611.01181)
 [![Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Foresight--SWE-yellow)](https://huggingface.co/datasets/shaswat123/Foresight-SWE)
 [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fhuggingface.co%2Fapi%2Fdatasets%2Fshaswat123%2FForesight-SWE&query=%24.downloads&label=downloads&color=yellow)](https://huggingface.co/datasets/shaswat123/Foresight-SWE)
 [![Leaderboard](https://img.shields.io/badge/Leaderboard-website-blue)](https://shaswatpatel123.github.io/Foresight-SWE/)
@@ -52,3 +52,17 @@ Each script runs the agent (writing `preds.json`), then grades it (writing `fina
 - **Docker instead of Apptainer:** `--environment-class foresightDocker`.
 - **Native CLI agents:** `--agent-backend claude_code` or `--agent-backend codex`, with the matching `foresight_claude_*` / `foresight_codex*` config.
 - **PR2-direct (oracle):** `--task-column pr2_problem_statement --start-commit-field pr2_base_sha --image-field pr2base_image --grade-mode pr2`.
+
+## Citation
+
+```bibtex
+@misc{patel2026codingagentscatchbugs,
+      title={Do Coding Agents Catch Their Own Bugs? (They Don't.)}, 
+      author={Shaswat Patel and Michel Liao and Peter Henderson and He He and Valerie Chen},
+      year={2026},
+      eprint={2611.01181},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE},
+      url={https://arxiv.org/abs/2611.01181}, 
+}
+```
